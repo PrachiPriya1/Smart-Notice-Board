@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Schedule Board</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --card: #fafaf8;
+      --border: #e0ddd6;
+      --border-dark: #c8c4bc;
+      --accent: #1a1a2e;
+      --accent2: #16213e;
+      --green: #2d7a4f;
+      --green-bg: #edf7f1;
+      --green-border: #a3d4b5;
+      --red: #c0392b;
+      --red-bg: #fdf0ee;
+      --red-border: #e8b4ae;
+      --amber: #b7791f;
+      --amber-bg: #fef9ec;
+      --amber-border: #f0d080;
+      --blue: #1a4f8a;
+      --blue-bg: #eef4fc;
+      --blue-border: #a8c8f0;
+      --text: #1a1a1e;
+      --text2: #52525e;
+      --text3: #8a8a96;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+      --radius: 10px;
+      --radius-sm: 6px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--accent);
+      color: #fff;
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .main {
+      padding: 28px 28px 60px;
+      overflow-y: auto;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar-logo {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 6px;
+    }
+
+    .sidebar-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 28px;
+      line-height: 1.3;
+    }
+
+    .conn-section {
+      margin-bottom: 24px;
+    }
+
+    .field-label {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: rgba(255, 255, 255, 0.45);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 11px;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 8px;
+    }
+
+    .field-input:focus {
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .field-input::placeholder {
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-connect {
+      width: 100%;
+      padding: 9px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-sm);
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .btn-connect:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-connect.active {
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .btn-connect:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 8px;
+      transition: all 0.3s;
+    }
+
+    .status-badge.connected {
+      background: rgba(45, 122, 79, 0.25);
+      border-color: rgba(45, 122, 79, 0.5);
+      color: #6fcf97;
+    }
+
+    .status-badge.error {
+      background: rgba(192, 57, 43, 0.25);
+      border-color: rgba(192, 57, 43, 0.5);
+      color: #ff8a80;
+    }
+
+    .s-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      flex-shrink: 0;
+    }
+
+    .status-badge.connected .s-dot {
+      background: #6fcf97;
+      box-shadow: 0 0 6px #6fcf97;
+      animation: blink 2s infinite;
+    }
+
+    .status-badge.error .s-dot {
+      background: #ff8a80;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.4
+      }
+    }
+
+    .sidebar-divider {
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin: 20px 0;
+    }
+
+    .sidebar-section-title {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: rgba(255, 255, 255, 0.35);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    /* Live status box */
+    .live-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-size: 12px;
+    }
+
+    .live-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .live-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .live-key {
+      color: rgba(255, 255, 255, 0.4);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .live-val {
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .live-val.green {
+      color: #6fcf97;
+    }
+
+    .live-val.amber {
+      color: #f6ad55;
+    }
+
+    .live-val.red {
+      color: #ff8a80;
+    }
+
+    .push-btn {
+      margin-top: 12px;
+      width: 100%;
+      padding: 10px;
+      background: #fff;
+      color: var(--accent);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+
+    .push-btn:hover {
+      background: #eef;
+    }
+
+    .push-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Main area ── */
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .page-sub {
+      font-size: 13px;
+      color: var(--text2);
+      margin-top: 4px;
+    }
+
+    /* ── Add form ── */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-bottom: 20px;
+    }
+
+    .form-card-title {
+      font-size: 11px;
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .form-field {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .form-field label {
+      display: block;
+      font-size: 11px;
+      color: var(--text2);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-field input,
+    .form-field select {
+      width: 100%;
+      padding: 9px 11px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .form-field input:focus,
+    .form-field select:focus {
+      border-color: var(--accent);
+    }
+
+    .form-field select option {
+      background: #fff;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      padding: 9px 20px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.85;
+    }
+
+    .btn-ghost {
+      padding: 9px 16px;
+      background: none;
+      color: var(--text2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--sans);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg);
+    }
+
+    /* ── Schedule table ── */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .table-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .table-header-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .count-badge {
+      font-size: 11px;
+      font-family: var(--mono);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 2px 10px;
+      color: var(--text2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--card);
+    }
+
+    th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text3);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 11px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--bg);
+    }
+
+    tr.editing td {
+      background: #fffbe6;
+    }
+
+    .td-time {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--blue);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .td-subject {
+      font-weight: 500;
+    }
+
+    .td-duration {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 10px;
+      font-family: var(--mono);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .tag-lecture {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border: 1px solid var(--blue-border);
+    }
+
+    .tag-lab {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+    }
+
+    .tag-break {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      transition: background 0.15s;
+    }
+
+    .action-btn:hover {
+      background: var(--bg);
+    }
+
+    .action-btn.del:hover {
+      background: var(--red-bg);
+    }
+
+    /* inline edit inputs */
+    .inline-input {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: var(--sans);
+      background: #fff;
+      color: var(--text);
+      width: 100%;
+      min-width: 80px;
+    }
+
+    .inline-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* current period highlight */
+    tr.current-period td {
+      background: var(--green-bg) !important;
+    }
+
+    tr.current-period .td-time {
+      color: var(--green);
+    }
+
+    /* ── LCD preview ── */
+    .lcd-preview-wrap {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .lcd-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .lcd-card-title {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+
+    .lcd-outer {
+      background: #1c2b1c;
+      border-radius: 8px;
+      padding: 14px 18px;
+      border: 3px solid #2e412e;
+      box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .lcd-row {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: #57f092;
+      letter-spacing: 2px;
+      height: 22px;
+      line-height: 22px;
+      text-shadow: 0 0 10px rgba(87, 240, 146, 0.6);
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    .lcd-row+.lcd-row {
+      margin-top: 6px;
+    }
+
+    .hw-status-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+
+    .hw-status-card-title {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+
+    .hw-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .hw-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .hw-label {
+      color: var(--text2);
+    }
+
+    .hw-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border-dark);
+      transition: all 0.4s;
+    }
+
+    .hw-dot.on-green {
+      background: #2ecc71;
+      box-shadow: 0 0 8px #2ecc71;
+    }
+
+    .hw-dot.on-red {
+      background: #e74c3c;
+      box-shadow: 0 0 8px #e74c3c;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      padding: 11px 18px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: var(--mono);
+      background: var(--accent);
+      color: #fff;
+      border: 1px solid transparent;
+      transform: translateY(60px) scale(0.96);
+      opacity: 0;
+      transition: all 0.28s cubic-bezier(0.34, 1.4, 0.64, 1);
+      pointer-events: none;
+    }
+
+    #toast.show {
+      transform: none;
+      opacity: 1;
+    }
+
+    #toast.ok {
+      background: var(--green);
+    }
+
+    #toast.err {
+      background: var(--red);
+    }
+
+    /* empty state */
+    .empty-row td {
+      text-align: center;
+      padding: 40px;
+      color: var(--text3);
+      font-size: 13px;
+    }
+
+    @media (max-width: 700px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        padding: 20px;
+      }
+
+      .main {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+
+    
+    <aside class="sidebar">
+      <div class="sidebar-logo">SMART NOTICE BOARD</div>
+      <div class="sidebar-title">Class Schedule Controller</div>
+
+      <div class="conn-section">
+        <label class="field-label">HiveMQ Host</label>
+        <input class="field-input" id="mqttHost" placeholder="xxxx.hivemq.cloud" type="text" />
+        <label class="field-label">Port (WSS)</label>
+        <input class="field-input" id="mqttPort" value="8884" type="text" />
+        <label class="field-label">Username</label>
+        <input class="field-input" id="mqttUser" placeholder="username" type="text" />
+        <label class="field-label">Password</label>
+        <input class="field-input" id="mqttPass" placeholder="••••••••" type="password" />
+        <label class="field-label">Topic</label>
+        <input class="field-input" id="mqttTopic" value="noticeboard/schedule" type="text" />
+        <button class="btn-connect" id="connectBtn" onclick="toggleConnect()">Connect</button>
+        <div class="status-badge" id="statusBadge">
+          <div class="s-dot"></div>
+          <span id="statusText">Disconnected</span>
+        </div>
+      </div>
+
+      <hr class="sidebar-divider" />
+
+      <div class="sidebar-section-title">Live Hardware Status</div>
+      <div class="live-box">
+        <div class="live-row">
+          <span class="live-key">CURRENT</span>
+          <span class="live-val" id="liveCurrentSubject">—</span>
+        </div>
+        <div class="live-row">
+          <span class="live-key">ENDS AT</span>
+          <span class="live-val amber" id="liveEndsAt">—</span>
+        </div>
+        <div class="live-row">
+          <span class="live-key">NEXT CLASS</span>
+          <span class="live-val green" id="liveNext">—</span>
+        </div>
+        <div class="live-row">
+          <span class="live-key">LED</span>
+          <span class="live-val" id="liveLED">OFF</span>
+        </div>
+      </div>
+
+      <button class="push-btn" id="pushBtn" onclick="pushSchedule()" disabled>▶ Push Schedule to Board</button>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main class="main">
+      <div class="page-header">
+        <div class="page-title">Timetable Manager</div>
+        <div class="page-sub">Add, edit, and delete class periods. Push to board when ready.</div>
+      </div>
+
+      <!-- LCD + HW preview -->
+      <div class="lcd-preview-wrap">
+        <div class="lcd-card">
+          <div class="lcd-card-title">LCD Preview (live)</div>
+          <div class="lcd-outer">
+            <div class="lcd-row" id="lcdRow1">SMART NOTICE BOARD</div>
+            <div class="lcd-row" id="lcdRow2">No schedule pushed</div>
+          </div>
+        </div>
+        <div class="hw-status-card">
+          <div class="hw-status-card-title">Hardware Indicators</div>
+          <div class="hw-row">
+            <span class="hw-label">Green LED (class active)</span>
+            <div class="hw-dot" id="dotLED"></div>
+          </div>
+          <div class="hw-row">
+            <span class="hw-label">Buzzer (period end)</span>
+            <div class="hw-dot" id="dotBuzzer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add form -->
+      <div class="form-card">
+        <div class="form-card-title" id="formModeLabel">Add New Period</div>
+        <div class="form-row">
+          <div class="form-field" style="min-width:110px;max-width:130px">
+            <label>Start Time</label>
+            <input type="time" id="fStart" />
+          </div>
+          <div class="form-field" style="min-width:110px;max-width:130px">
+            <label>End Time</label>
+            <input type="time" id="fEnd" />
+          </div>
+          <div class="form-field" style="flex:2">
+            <label>Subject Name</label>
+            <input type="text" id="fSubject" placeholder="e.g. Data Structures" maxlength="50" />
+          </div>
+          <div class="form-field" style="max-width:140px">
+            <label>Type</label>
+            <select id="fType">
+              <option value="lecture">Lecture</option>
+              <option value="lab">Lab</option>
+              <option value="break">Break</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="formSubmitBtn" onclick="submitForm()">+ Add Period</button>
+          <button class="btn-ghost" id="formCancelBtn" onclick="cancelEdit()" style="display:none">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-header-title">Schedule</span>
+          <span class="count-badge" id="countBadge">0 periods</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Start</th>
+              <th>End</th>
+              <th>Duration</th>
+              <th>Subject</th>
+              <th>Type</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="schedBody">
+            <tr class="empty-row">
+              <td colspan="6">No periods added yet. Add your first class above.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // ─────────────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────────────
+    let schedule = JSON.parse(localStorage.getItem('nb_schedule') || '[]');
+    let client = null;
+    let connected = false;
+    let editingId = null;
+    let lcdTicker = null;
+    let hwTicker = null;
+
+    // ─────────────────────────────────────────────────────
+    // MQTT
+    // ─────────────────────────────────────────────────────
+    function toggleConnect() {
+      connected ? disconnect() : connect();
+    }
+    function connect() {
+      const host = document.getElementById('mqttHost').value.trim();
+      const port = document.getElementById('mqttPort').value.trim();
+      const user = document.getElementById('mqttUser').value.trim();
+      const pass = document.getElementById('mqttPass').value.trim();
+      if (!host) { toast('Enter HiveMQ host first', 'err'); return; }
+      setStatus('connecting');
+      document.getElementById('connectBtn').disabled = true;
+      client = mqtt.connect(`wss://${host}:${port}/mqtt`, {
+        username: user, password: pass,
+        clientId: 'schedule_dashboard_' + Math.random().toString(16).slice(2),
+        clean: true, reconnectPeriod: 0
+      });
+      client.on('connect', () => {
+        connected = true;
+        setStatus('connected');
+        document.getElementById('connectBtn').textContent = 'Disconnect';
+        document.getElementById('connectBtn').classList.add('active');
+        document.getElementById('connectBtn').disabled = false;
+        document.getElementById('pushBtn').disabled = false;
+        toast('Connected!', 'ok');
+      });
+      client.on('error', () => {
+        setStatus('error');
+        document.getElementById('connectBtn').disabled = false;
+        toast('Connection failed — check credentials', 'err');
+      });
+      client.on('close', () => { if (connected) disconnect(true); });
+    }
+    function disconnect(auto) {
+      connected = false;
+      if (client) { try { client.end(true); } catch (e) { } client = null; }
+      setStatus('disconnected');
+      const btn = document.getElementById('connectBtn');
+      btn.textContent = 'Connect'; btn.classList.remove('active'); btn.disabled = false;
+      document.getElementById('pushBtn').disabled = true;
+      if (!auto) toast('Disconnected');
+    }
+    function setStatus(s) {
+      const badge = document.getElementById('statusBadge');
+      const txt = document.getElementById('statusText');
+      badge.className = 'status-badge';
+      if (s === 'connected') { badge.classList.add('connected'); txt.textContent = 'Connected'; }
+      else if (s === 'error') { badge.classList.add('error'); txt.textContent = 'Error'; }
+      else if (s === 'connecting') { txt.textContent = 'Connecting…'; }
+      else { txt.textContent = 'Disconnected'; }
+    }
+
+    function pushSchedule() {
+      if (!schedule.length) { toast('Add at least one period first', 'err'); return; }
+      const topic = document.getElementById('mqttTopic').value.trim();
+      const payload = JSON.stringify({ type: 'schedule', data: schedule });
+      client.publish(topic, payload, { qos: 1, retain: true });
+      toast('Schedule pushed to board!', 'ok');
+    }
+
+    // ─────────────────────────────────────────────────────
+    // FORM — ADD / EDIT
+    // ─────────────────────────────────────────────────────
+    function submitForm() {
+      const start = document.getElementById('fStart').value;
+      const end = document.getElementById('fEnd').value;
+      const subject = document.getElementById('fSubject').value.trim();
+      const type = document.getElementById('fType').value;
+      if (!start || !end || !subject) { toast('Fill all fields', 'err'); return; }
+      if (start >= end) { toast('End time must be after start', 'err'); return; }
+
+      if (editingId !== null) {
+        const idx = schedule.findIndex(s => s.id === editingId);
+        if (idx !== -1) schedule[idx] = { ...schedule[idx], start, end, subject, type };
+        editingId = null;
+        cancelEdit();
+      } else {
+        schedule.push({ id: Date.now(), start, end, subject, type });
+      }
+      schedule.sort((a, b) => a.start.localeCompare(b.start));
+      save(); render();
+      document.getElementById('fStart').value = '';
+      document.getElementById('fEnd').value = '';
+      document.getElementById('fSubject').value = '';
+      document.getElementById('fType').value = 'lecture';
+      toast(editingId !== null ? 'Updated' : 'Period added', 'ok');
+    }
+
+    function startEdit(id) {
+      const entry = schedule.find(s => s.id === id);
+      if (!entry) return;
+      editingId = id;
+      document.getElementById('fStart').value = entry.start;
+      document.getElementById('fEnd').value = entry.end;
+      document.getElementById('fSubject').value = entry.subject;
+      document.getElementById('fType').value = entry.type;
+      document.getElementById('formModeLabel').textContent = 'Edit Period';
+      document.getElementById('formSubmitBtn').textContent = '✓ Save Changes';
+      document.getElementById('formCancelBtn').style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+      editingId = null;
+      document.getElementById('fStart').value = '';
+      document.getElementById('fEnd').value = '';
+      document.getElementById('fSubject').value = '';
+      document.getElementById('fType').value = 'lecture';
+      document.getElementById('formModeLabel').textContent = 'Add New Period';
+      document.getElementById('formSubmitBtn').textContent = '+ Add Period';
+      document.getElementById('formCancelBtn').style.display = 'none';
+    }
+
+    function deleteEntry(id) {
+      schedule = schedule.filter(s => s.id !== id);
+      if (editingId === id) cancelEdit();
+      save(); render();
+      toast('Period deleted');
+    }
+
+    // ─────────────────────────────────────────────────────
+    // RENDER TABLE
+    // ─────────────────────────────────────────────────────
+    function durationStr(start, end) {
+      const [sh, sm] = start.split(':').map(Number);
+      const [eh, em] = end.split(':').map(Number);
+      const mins = (eh * 60 + em) - (sh * 60 + sm);
+      return mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
+    }
+    function tagHTML(type) {
+      const map = { lecture: 'tag-lecture', lab: 'tag-lab', break: 'tag-break' };
+      return `<span class="tag ${map[type] || 'tag-lecture'}">${type.toUpperCase()}</span>`;
+    }
+    function timeLabel(t) {
+      const [h, m] = t.split(':').map(Number);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const hh = h % 12 || 12;
+      return `${hh}:${m.toString().padStart(2, '0')} ${ampm}`;
+    }
+    function currentPeriod() {
+      const now = new Date();
+      const cur = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      return schedule.find(s => s.start <= cur && cur < s.end) || null;
+    }
+    function nextPeriod() {
+      const now = new Date();
+      const cur = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      return schedule.find(s => s.start > cur) || null;
+    }
+
+    function render() {
+      const tbody = document.getElementById('schedBody');
+      document.getElementById('countBadge').textContent = `${schedule.length} period${schedule.length !== 1 ? 's' : ''}`;
+      if (!schedule.length) {
+        tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No periods added yet. Add your first class above.</td></tr>';
+        return;
+      }
+      const cp = currentPeriod();
+      tbody.innerHTML = schedule.map(s => `
+    <tr ${cp && cp.id === s.id ? 'class="current-period"' : ''}>
+      <td class="td-time">${timeLabel(s.start)}</td>
+      <td class="td-time">${timeLabel(s.end)}</td>
+      <td class="td-duration">${durationStr(s.start, s.end)}</td>
+      <td class="td-subject">${s.subject}</td>
+      <td>${tagHTML(s.type)}</td>
+      <td>
+        <button class="action-btn" onclick="startEdit(${s.id})" title="Edit">✏️</button>
+        <button class="action-btn del" onclick="deleteEntry(${s.id})" title="Delete">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+    }
+
+  
+    function pad16(s) { return (s + '                ').slice(0, 16); }
+
+    function updateLiveStatus() {
+      const cp = currentPeriod();
+      const np = nextPeriod();
+
+      if (cp) {
+        // Row 1: time range
+        const row1 = `${timeLabel(cp.start)}-${timeLabel(cp.end)}`;
+        // Row 2: subject (scroll handled on NodeMCU side)
+        const row2 = cp.subject;
+        document.getElementById('lcdRow1').textContent = pad16(row1);
+        document.getElementById('lcdRow2').textContent = pad16(row2);
+        document.getElementById('liveCurrentSubject').textContent = cp.subject;
+        document.getElementById('liveEndsAt').textContent = timeLabel(cp.end);
+        document.getElementById('liveLED').textContent = 'ON';
+        document.getElementById('liveLED').className = 'live-val green';
+        document.getElementById('dotLED').className = 'hw-dot on-green';
+        // check if period JUST ended for buzzer flash
+        document.getElementById('dotBuzzer').className = 'hw-dot'; // reset each tick
+      } else {
+        // Between classes — show next
+        if (np) {
+          document.getElementById('lcdRow1').textContent = pad16('Next: ' + np.start);
+          document.getElementById('lcdRow2').textContent = pad16(np.subject);
+        } else {
+          document.getElementById('lcdRow1').textContent = pad16('No more classes');
+          document.getElementById('lcdRow2').textContent = pad16('Have a good day!');
+        }
+        document.getElementById('liveCurrentSubject').textContent = 'No active class';
+        document.getElementById('liveEndsAt').textContent = '—';
+        document.getElementById('liveLED').textContent = 'OFF';
+        document.getElementById('liveLED').className = 'live-val';
+        document.getElementById('dotLED').className = 'hw-dot';
+      }
+
+      document.getElementById('liveNext').textContent = np ? `${np.subject} @ ${timeLabel(np.start)}` : '—';
+      render(); // re-highlight current row
+    }
+
+    // Buzzer flash: simulate a 3-second flash when period ends
+    let lastCheckedEnded = null;
+    function checkPeriodEnd() {
+      const now = new Date();
+      const cur = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const justEnded = schedule.find(s => {
+        const [eh, em] = s.end.split(':').map(Number);
+        const endMin = eh * 60 + em;
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        return nowMin === endMin && now.getSeconds() < 10;
+      });
+      if (justEnded && justEnded.id !== lastCheckedEnded) {
+        lastCheckedEnded = justEnded.id;
+        document.getElementById('dotBuzzer').className = 'hw-dot on-red';
+        setTimeout(() => { document.getElementById('dotBuzzer').className = 'hw-dot'; }, 5000);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────
+    // PERSISTENCE
+    // ─────────────────────────────────────────────────────
+    function save() { localStorage.setItem('nb_schedule', JSON.stringify(schedule)); }
+
+    // ─────────────────────────────────────────────────────
+    // TOAST
+    // ─────────────────────────────────────────────────────
+    let _tt;
+    function toast(msg, type) {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.className = 'show' + (type ? ' ' + type : '');
+      clearTimeout(_tt); _tt = setTimeout(() => { el.className = ''; }, 3000);
+    }
+
+
+    render();
+    updateLiveStatus();
+    setInterval(() => { updateLiveStatus(); checkPeriodEnd(); }, 10000);
+  </script>
+</body>
+
+</html>
