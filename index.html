@@ -39,708 +39,189 @@
       --radius-sm: 6px;
     }
 
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: var(--sans);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* ── Layout ── */
-    .layout {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      min-height: 100vh;
-    }
+    .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
 
     .sidebar {
-      background: var(--accent);
-      color: #fff;
-      padding: 28px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
+      background: var(--accent); color: #fff; padding: 28px 20px;
+      display: flex; flex-direction: column; gap: 0;
     }
+    .main { padding: 28px 28px 60px; overflow-y: auto; }
 
-    .main {
-      padding: 28px 28px 60px;
-      overflow-y: auto;
+    .sidebar-logo { font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 2px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+    .sidebar-title { font-size: 20px; font-weight: 600; margin-bottom: 28px; line-height: 1.3; }
+
+    .conn-section { margin-bottom: 24px; }
+    .field-label { font-size: 10px; font-family: var(--mono); color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
+    .field-input { width: 100%; padding: 8px 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-sm); color: #fff; font-family: var(--mono); font-size: 11px; outline: none; transition: border-color 0.2s; margin-bottom: 8px; }
+    .field-input:focus { border-color: rgba(255,255,255,0.4); }
+    .field-input::placeholder { color: rgba(255,255,255,0.25); }
+
+    .btn-connect { width: 100%; padding: 9px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-sm); color: #fff; font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 1px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; }
+    .btn-connect:hover { background: rgba(255,255,255,0.2); }
+    .btn-connect.active { background: var(--red); border-color: var(--red); }
+    .btn-connect:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .status-badge { display: flex; align-items: center; gap: 7px; padding: 8px 10px; border-radius: var(--radius-sm); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px; transition: all 0.3s; }
+    .status-badge.connected { background: rgba(45,122,79,0.25); border-color: rgba(45,122,79,0.5); color: #6fcf97; }
+    .status-badge.error { background: rgba(192,57,43,0.25); border-color: rgba(192,57,43,0.5); color: #ff8a80; }
+    .s-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.3); flex-shrink: 0; }
+    .status-badge.connected .s-dot { background: #6fcf97; box-shadow: 0 0 6px #6fcf97; animation: blink 2s infinite; }
+    .status-badge.error .s-dot { background: #ff8a80; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .sidebar-divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0; }
+    .sidebar-section-title { font-size: 10px; font-family: var(--mono); color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+
+    .live-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius-sm); padding: 12px; font-size: 12px; }
+    .live-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .live-row:last-child { margin-bottom: 0; }
+    .live-key { color: rgba(255,255,255,0.4); font-family: var(--mono); font-size: 10px; }
+    .live-val { color: #fff; font-family: var(--mono); font-size: 11px; font-weight: 600; }
+    .live-val.green { color: #6fcf97; }
+    .live-val.amber { color: #f6ad55; }
+    .live-val.red { color: #ff8a80; }
+
+    .push-btn { margin-top: 12px; width: 100%; padding: 10px; background: #fff; color: var(--accent); border: none; border-radius: var(--radius-sm); font-family: var(--mono); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
+    .push-btn:hover { background: #eef; }
+    .push-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .page-header { margin-bottom: 24px; }
+    .page-title { font-size: 22px; font-weight: 600; }
+    .page-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+    .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 20px; }
+    .form-card-title { font-size: 11px; font-family: var(--mono); font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .form-field { flex: 1; min-width: 120px; }
+    .form-field label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 5px; font-weight: 500; }
+    .form-field input, .form-field select { width: 100%; padding: 9px 11px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; transition: border-color 0.15s; }
+    .form-field input:focus, .form-field select:focus { border-color: var(--accent); }
+    .form-field select option { background: #fff; }
+
+    /* CHANGED: subject input wrapper with char counter */
+    .subject-wrap { position: relative; }
+    .subject-wrap input { padding-right: 52px; }
+    .char-counter {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      font-family: var(--mono); font-size: 10px; color: var(--text3);
+      pointer-events: none; transition: color 0.2s;
     }
+    .char-counter.warn { color: var(--amber); }
+    .char-counter.over { color: var(--red); font-weight: 700; }
 
-    /* ── Sidebar ── */
-    .sidebar-logo {
+    /* CHANGED: truncation warning banner */
+    .truncation-warn {
+      display: none;
+      align-items: center; gap: 8px;
+      margin-top: 8px; padding: 8px 12px;
+      background: var(--amber-bg); border: 1px solid var(--amber-border);
+      border-radius: var(--radius-sm); font-size: 12px; color: var(--amber);
       font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 6px;
     }
-
-    .sidebar-title {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 28px;
-      line-height: 1.3;
-    }
-
-    .conn-section {
-      margin-bottom: 24px;
-    }
-
-    .field-label {
-      font-size: 10px;
-      font-family: var(--mono);
-      color: rgba(255, 255, 255, 0.45);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 5px;
-      display: block;
-    }
-
-    .field-input {
-      width: 100%;
-      padding: 8px 10px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: var(--radius-sm);
-      color: #fff;
-      font-family: var(--mono);
-      font-size: 11px;
-      outline: none;
-      transition: border-color 0.2s;
-      margin-bottom: 8px;
-    }
-
-    .field-input:focus {
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-
-    .field-input::placeholder {
-      color: rgba(255, 255, 255, 0.25);
-    }
-
-    .btn-connect {
-      width: 100%;
-      padding: 9px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: var(--radius-sm);
-      color: #fff;
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-transform: uppercase;
-    }
-
-    .btn-connect:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-connect.active {
-      background: var(--red);
-      border-color: var(--red);
-    }
-
-    .btn-connect:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .status-badge {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 8px 10px;
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      font-family: var(--mono);
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-top: 8px;
-      transition: all 0.3s;
-    }
-
-    .status-badge.connected {
-      background: rgba(45, 122, 79, 0.25);
-      border-color: rgba(45, 122, 79, 0.5);
-      color: #6fcf97;
-    }
-
-    .status-badge.error {
-      background: rgba(192, 57, 43, 0.25);
-      border-color: rgba(192, 57, 43, 0.5);
-      color: #ff8a80;
-    }
-
-    .s-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      flex-shrink: 0;
-    }
-
-    .status-badge.connected .s-dot {
-      background: #6fcf97;
-      box-shadow: 0 0 6px #6fcf97;
-      animation: blink 2s infinite;
-    }
-
-    .status-badge.error .s-dot {
-      background: #ff8a80;
-    }
-
-    @keyframes blink {
-
-      0%,
-      100% {
-        opacity: 1
-      }
-
-      50% {
-        opacity: 0.4
-      }
-    }
-
-    .sidebar-divider {
-      border: none;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      margin: 20px 0;
-    }
-
-    .sidebar-section-title {
-      font-size: 10px;
-      font-family: var(--mono);
-      color: rgba(255, 255, 255, 0.35);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-    }
-
-    /* Live status box */
-    .live-box {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: var(--radius-sm);
-      padding: 12px;
-      font-size: 12px;
-    }
-
-    .live-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .live-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .live-key {
-      color: rgba(255, 255, 255, 0.4);
-      font-family: var(--mono);
-      font-size: 10px;
-    }
-
-    .live-val {
-      color: #fff;
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .live-val.green {
-      color: #6fcf97;
-    }
-
-    .live-val.amber {
-      color: #f6ad55;
-    }
-
-    .live-val.red {
-      color: #ff8a80;
-    }
-
-    .push-btn {
-      margin-top: 12px;
-      width: 100%;
-      padding: 10px;
-      background: #fff;
-      color: var(--accent);
-      border: none;
-      border-radius: var(--radius-sm);
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.5px;
-    }
-
-    .push-btn:hover {
-      background: #eef;
-    }
-
-    .push-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    /* ── Main area ── */
-    .page-header {
-      margin-bottom: 24px;
-    }
-
-    .page-title {
-      font-size: 22px;
-      font-weight: 600;
-    }
-
-    .page-sub {
-      font-size: 13px;
-      color: var(--text2);
-      margin-top: 4px;
-    }
-
-    /* ── Add form ── */
-    .form-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 22px;
-      margin-bottom: 20px;
-    }
-
-    .form-card-title {
-      font-size: 11px;
-      font-family: var(--mono);
-      font-weight: 700;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 16px;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
-    }
-
-    .form-field {
-      flex: 1;
-      min-width: 120px;
-    }
-
-    .form-field label {
-      display: block;
-      font-size: 11px;
-      color: var(--text2);
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-
-    .form-field input,
-    .form-field select {
-      width: 100%;
-      padding: 9px 11px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      color: var(--text);
-      font-family: var(--sans);
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .form-field input:focus,
-    .form-field select:focus {
-      border-color: var(--accent);
-    }
-
-    .form-field select option {
-      background: #fff;
-    }
-
-    .btn-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn-primary {
-      padding: 9px 20px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius-sm);
-      font-family: var(--mono);
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-
-    .btn-primary:hover {
-      opacity: 0.85;
-    }
-
-    .btn-ghost {
-      padding: 9px 16px;
-      background: none;
-      color: var(--text2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-family: var(--sans);
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .btn-ghost:hover {
-      background: var(--bg);
-    }
-
-    /* ── Schedule table ── */
-    .table-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-
-    .table-header {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .table-header-title {
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .count-badge {
-      font-size: 11px;
-      font-family: var(--mono);
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 2px 10px;
-      color: var(--text2);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    thead {
-      background: var(--card);
-    }
-
-    th {
-      padding: 10px 16px;
-      text-align: left;
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--text3);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    td {
-      padding: 11px 16px;
-      font-size: 13px;
-      border-bottom: 1px solid var(--border);
-      vertical-align: middle;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    tr:hover td {
-      background: var(--bg);
-    }
-
-    tr.editing td {
-      background: #fffbe6;
-    }
-
-    .td-time {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--blue);
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .td-subject {
-      font-weight: 500;
-    }
-
-    .td-duration {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text3);
-    }
-
-    .tag {
-      display: inline-block;
-      font-size: 10px;
-      font-family: var(--mono);
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-weight: 700;
-    }
-
-    .tag-lecture {
-      background: var(--blue-bg);
-      color: var(--blue);
-      border: 1px solid var(--blue-border);
-    }
-
-    .tag-lab {
-      background: var(--green-bg);
-      color: var(--green);
-      border: 1px solid var(--green-border);
-    }
-
-    .tag-break {
-      background: var(--amber-bg);
-      color: var(--amber);
-      border: 1px solid var(--amber-border);
-    }
-
-    .action-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 5px 8px;
-      border-radius: 4px;
-      font-size: 13px;
-      transition: background 0.15s;
-    }
-
-    .action-btn:hover {
-      background: var(--bg);
-    }
-
-    .action-btn.del:hover {
-      background: var(--red-bg);
-    }
-
-    /* inline edit inputs */
-    .inline-input {
-      padding: 5px 8px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      font-size: 12px;
-      font-family: var(--sans);
-      background: #fff;
-      color: var(--text);
-      width: 100%;
-      min-width: 80px;
-    }
-
-    .inline-input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    /* current period highlight */
-    tr.current-period td {
-      background: var(--green-bg) !important;
-    }
-
-    tr.current-period .td-time {
-      color: var(--green);
-    }
+    .truncation-warn.show { display: flex; }
+
+    .btn-row { display: flex; gap: 10px; }
+    .btn-primary { padding: 9px 20px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-family: var(--mono); font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity 0.15s; }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-ghost { padding: 9px 16px; background: none; color: var(--text2); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: var(--sans); font-size: 13px; cursor: pointer; transition: all 0.15s; }
+    .btn-ghost:hover { background: var(--bg); }
+
+    .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+    .table-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .table-header-title { font-size: 13px; font-weight: 600; }
+    .count-badge { font-size: 11px; font-family: var(--mono); background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; color: var(--text2); }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--card); }
+    th { padding: 10px 16px; text-align: left; font-size: 11px; font-family: var(--mono); color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+    td { padding: 11px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg); }
+    tr.editing td { background: #fffbe6; }
+
+    .td-time { font-family: var(--mono); font-size: 12px; color: var(--blue); font-weight: 600; white-space: nowrap; }
+    .td-subject { font-weight: 500; }
+    .td-duration { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+    /* CHANGED: truncation indicator in table */
+    .truncated-badge {
+      display: inline-block; font-size: 9px; font-family: var(--mono); padding: 1px 5px;
+      border-radius: 3px; background: var(--amber-bg); color: var(--amber);
+      border: 1px solid var(--amber-border); margin-left: 5px; vertical-align: middle;
+    }
+
+    .tag { display: inline-block; font-size: 10px; font-family: var(--mono); padding: 2px 8px; border-radius: 999px; font-weight: 700; }
+    .tag-lecture { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+    .tag-lab { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+    .tag-break { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+
+    .action-btn { background: none; border: none; cursor: pointer; padding: 5px 8px; border-radius: 4px; font-size: 13px; transition: background 0.15s; }
+    .action-btn:hover { background: var(--bg); }
+    .action-btn.del:hover { background: var(--red-bg); }
+
+    .inline-input { padding: 5px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 12px; font-family: var(--sans); background: #fff; color: var(--text); width: 100%; min-width: 80px; }
+    .inline-input:focus { outline: none; border-color: var(--accent); }
+
+    tr.current-period td { background: var(--green-bg) !important; }
+    tr.current-period .td-time { color: var(--green); }
 
     /* ── LCD preview ── */
-    .lcd-preview-wrap {
-      display: flex;
-      gap: 20px;
-      align-items: flex-start;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .lcd-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      flex: 1;
-      min-width: 260px;
-    }
-
-    .lcd-card-title {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 14px;
-    }
+    .lcd-preview-wrap { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; }
+    .lcd-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; flex: 1; min-width: 260px; }
+    .lcd-card-title { font-size: 11px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
 
     .lcd-outer {
-      background: #1c2b1c;
-      border-radius: 8px;
-      padding: 14px 18px;
-      border: 3px solid #2e412e;
-      box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.6);
+      background: #1c2b1c; border-radius: 8px; padding: 14px 18px;
+      border: 3px solid #2e412e; box-shadow: inset 0 0 24px rgba(0,0,0,0.6);
     }
-
+    /* CHANGED: overflow hidden + fixed width for scroll simulation */
     .lcd-row {
-      font-family: var(--mono);
-      font-size: 15px;
-      color: #57f092;
-      letter-spacing: 2px;
-      height: 22px;
-      line-height: 22px;
-      text-shadow: 0 0 10px rgba(87, 240, 146, 0.6);
-      white-space: pre;
-      overflow: hidden;
+      font-family: var(--mono); font-size: 15px; color: #57f092;
+      letter-spacing: 2px; height: 22px; line-height: 22px;
+      text-shadow: 0 0 10px rgba(87,240,146,0.6);
+      white-space: pre; overflow: hidden;
+      width: calc(16ch + 32px); /* exactly 16 mono chars */
     }
+    .lcd-row + .lcd-row { margin-top: 6px; }
 
-    .lcd-row+.lcd-row {
-      margin-top: 6px;
+    /* CHANGED: scroll indicator label */
+    .lcd-scroll-hint {
+      margin-top: 8px; font-size: 10px; font-family: var(--mono);
+      color: var(--text3); display: flex; align-items: center; gap: 5px;
     }
+    .scroll-indicator { animation: marquee-dot 1s infinite; }
+    @keyframes marquee-dot { 0%,100%{opacity:0.3} 50%{opacity:1} }
 
-    .hw-status-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-    }
+    .hw-status-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+    .hw-status-card-title { font-size: 11px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    .hw-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+    .hw-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .hw-label { color: var(--text2); }
+    .hw-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border-dark); transition: all 0.4s; }
+    .hw-dot.on-green { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
+    .hw-dot.on-red { background: #e74c3c; box-shadow: 0 0 8px #e74c3c; }
 
-    .hw-status-card-title {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 14px;
-    }
+    #toast { position: fixed; bottom: 24px; right: 24px; z-index: 999; padding: 11px 18px; border-radius: var(--radius); font-size: 13px; font-family: var(--mono); background: var(--accent); color: #fff; border: 1px solid transparent; transform: translateY(60px) scale(0.96); opacity: 0; transition: all 0.28s cubic-bezier(0.34,1.4,0.64,1); pointer-events: none; }
+    #toast.show { transform: none; opacity: 1; }
+    #toast.ok { background: var(--green); }
+    #toast.err { background: var(--red); }
 
-    .hw-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-
-    .hw-row:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-
-    .hw-label {
-      color: var(--text2);
-    }
-
-    .hw-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--border-dark);
-      transition: all 0.4s;
-    }
-
-    .hw-dot.on-green {
-      background: #2ecc71;
-      box-shadow: 0 0 8px #2ecc71;
-    }
-
-    .hw-dot.on-red {
-      background: #e74c3c;
-      box-shadow: 0 0 8px #e74c3c;
-    }
-
-    /* ── Toast ── */
-    #toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 999;
-      padding: 11px 18px;
-      border-radius: var(--radius);
-      font-size: 13px;
-      font-family: var(--mono);
-      background: var(--accent);
-      color: #fff;
-      border: 1px solid transparent;
-      transform: translateY(60px) scale(0.96);
-      opacity: 0;
-      transition: all 0.28s cubic-bezier(0.34, 1.4, 0.64, 1);
-      pointer-events: none;
-    }
-
-    #toast.show {
-      transform: none;
-      opacity: 1;
-    }
-
-    #toast.ok {
-      background: var(--green);
-    }
-
-    #toast.err {
-      background: var(--red);
-    }
-
-    /* empty state */
-    .empty-row td {
-      text-align: center;
-      padding: 40px;
-      color: var(--text3);
-      font-size: 13px;
-    }
+    .empty-row td { text-align: center; padding: 40px; color: var(--text3); font-size: 13px; }
 
     @media (max-width: 700px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .sidebar {
-        padding: 20px;
-      }
-
-      .main {
-        padding: 20px;
-      }
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { padding: 20px; }
+      .main { padding: 20px; }
     }
   </style>
 </head>
 
 <body>
   <div class="layout">
-
-    
     <aside class="sidebar">
       <div class="sidebar-logo">SMART NOTICE BOARD</div>
       <div class="sidebar-title">Class Schedule Controller</div>
@@ -788,20 +269,23 @@
       <button class="push-btn" id="pushBtn" onclick="pushSchedule()" disabled>▶ Push Schedule to Board</button>
     </aside>
 
-    <!-- ── MAIN ── -->
     <main class="main">
       <div class="page-header">
         <div class="page-title">Timetable Manager</div>
         <div class="page-sub">Add, edit, and delete class periods. Push to board when ready.</div>
       </div>
 
-      <!-- LCD + HW preview -->
       <div class="lcd-preview-wrap">
         <div class="lcd-card">
-          <div class="lcd-card-title">LCD Preview (live)</div>
+          <div class="lcd-card-title">LCD Preview (live simulation)</div>
           <div class="lcd-outer">
             <div class="lcd-row" id="lcdRow1">SMART NOTICE BOARD</div>
             <div class="lcd-row" id="lcdRow2">No schedule pushed</div>
+          </div>
+          <!-- CHANGED: shows when any row is scrolling -->
+          <div class="lcd-scroll-hint" id="lcdScrollHint" style="display:none">
+            <span class="scroll-indicator">◀▶</span>
+            <span>Text longer than 16 chars — scrolling on board</span>
           </div>
         </div>
         <div class="hw-status-card">
@@ -817,7 +301,7 @@
         </div>
       </div>
 
-      <!-- Add form -->
+      <!-- Add / Edit form -->
       <div class="form-card">
         <div class="form-card-title" id="formModeLabel">Add New Period</div>
         <div class="form-row">
@@ -830,8 +314,20 @@
             <input type="time" id="fEnd" />
           </div>
           <div class="form-field" style="flex:2">
-            <label>Subject Name</label>
-            <input type="text" id="fSubject" placeholder="e.g. Data Structures" maxlength="50" />
+            <label>
+              Subject Name
+              <!-- CHANGED: note that >16 chars will scroll -->
+              <span style="font-weight:400;color:var(--text3);font-size:10px;margin-left:4px">(>16 chars scrolls on LCD)</span>
+            </label>
+            <!-- CHANGED: no maxlength cap, char counter instead -->
+            <div class="subject-wrap">
+              <input type="text" id="fSubject" placeholder="e.g. Data Structures & Algorithms" maxlength="50" oninput="onSubjectInput(this)" />
+              <span class="char-counter" id="charCounter">0</span>
+            </div>
+            <!-- CHANGED: warning shown when >16 chars -->
+            <div class="truncation-warn" id="truncWarn">
+              ⚠ Longer than 16 chars — board will scroll this text
+            </div>
           </div>
           <div class="form-field" style="max-width:140px">
             <label>Type</label>
@@ -848,7 +344,6 @@
         </div>
       </div>
 
-      <!-- Table -->
       <div class="table-card">
         <div class="table-header">
           <span class="table-header-title">Schedule</span>
@@ -885,15 +380,69 @@
     let client = null;
     let connected = false;
     let editingId = null;
-    let lcdTicker = null;
-    let hwTicker = null;
+
+    // ─────────────────────────────────────────────────────
+    // CHANGED: LCD scroll simulation state
+    // Two independent per-row scroll states, matching firmware exactly
+    // ─────────────────────────────────────────────────────
+    const lcdState = {
+      row1: { text: '', offset: 0, active: false, timer: null },
+      row2: { text: '', offset: 0, active: false, timer: null },
+    };
+    const LCD_COLS = 16;
+    const SCROLL_INTERVAL = 400; // ms — matches firmware
+
+    function lcdSetRow(row, text) {
+      const state = lcdState[row];
+      const el = document.getElementById(row === 'row1' ? 'lcdRow1' : 'lcdRow2');
+
+      // Stop existing timer
+      if (state.timer) { clearInterval(state.timer); state.timer = null; }
+
+      if (text.length <= LCD_COLS) {
+        // Fits — static display
+        state.active = false;
+        state.text = '';
+        state.offset = 0;
+        el.textContent = text.padEnd(LCD_COLS, ' ');
+      } else {
+        // Too long — scroll (match firmware: text + 8 trailing spaces before looping)
+        state.active = true;
+        state.text = text + '        '; // 8 spaces gap
+        state.offset = 0;
+        el.textContent = state.text.substring(0, LCD_COLS);
+        state.timer = setInterval(() => {
+          state.offset++;
+          if (state.offset >= state.text.length) state.offset = 0;
+          let visible = state.text.substring(state.offset, state.offset + LCD_COLS);
+          while (visible.length < LCD_COLS) visible += ' ';
+          el.textContent = visible;
+        }, SCROLL_INTERVAL);
+      }
+
+      // Show/hide scroll hint
+      const anyScrolling = lcdState.row1.active || lcdState.row2.active;
+      document.getElementById('lcdScrollHint').style.display = anyScrolling ? 'flex' : 'none';
+    }
+
+    // ─────────────────────────────────────────────────────
+    // CHANGED: subject input live feedback
+    // ─────────────────────────────────────────────────────
+    function onSubjectInput(el) {
+      const len = el.value.length;
+      const counter = document.getElementById('charCounter');
+      const warn = document.getElementById('truncWarn');
+
+      counter.textContent = len;
+      counter.className = 'char-counter' + (len > 16 ? ' over' : len > 12 ? ' warn' : '');
+      warn.className = 'truncation-warn' + (len > 16 ? ' show' : '');
+    }
 
     // ─────────────────────────────────────────────────────
     // MQTT
     // ─────────────────────────────────────────────────────
-    function toggleConnect() {
-      connected ? disconnect() : connect();
-    }
+    function toggleConnect() { connected ? disconnect() : connect(); }
+
     function connect() {
       const host = document.getElementById('mqttHost').value.trim();
       const port = document.getElementById('mqttPort').value.trim();
@@ -908,8 +457,7 @@
         clean: true, reconnectPeriod: 0
       });
       client.on('connect', () => {
-        connected = true;
-        setStatus('connected');
+        connected = true; setStatus('connected');
         document.getElementById('connectBtn').textContent = 'Disconnect';
         document.getElementById('connectBtn').classList.add('active');
         document.getElementById('connectBtn').disabled = false;
@@ -923,15 +471,17 @@
       });
       client.on('close', () => { if (connected) disconnect(true); });
     }
+
     function disconnect(auto) {
       connected = false;
-      if (client) { try { client.end(true); } catch (e) { } client = null; }
+      if (client) { try { client.end(true); } catch(e){} client = null; }
       setStatus('disconnected');
       const btn = document.getElementById('connectBtn');
       btn.textContent = 'Connect'; btn.classList.remove('active'); btn.disabled = false;
       document.getElementById('pushBtn').disabled = true;
       if (!auto) toast('Disconnected');
     }
+
     function setStatus(s) {
       const badge = document.getElementById('statusBadge');
       const txt = document.getElementById('statusText');
@@ -954,10 +504,10 @@
     // FORM — ADD / EDIT
     // ─────────────────────────────────────────────────────
     function submitForm() {
-      const start = document.getElementById('fStart').value;
-      const end = document.getElementById('fEnd').value;
+      const start   = document.getElementById('fStart').value;
+      const end     = document.getElementById('fEnd').value;
       const subject = document.getElementById('fSubject').value.trim();
-      const type = document.getElementById('fType').value;
+      const type    = document.getElementById('fType').value;
       if (!start || !end || !subject) { toast('Fill all fields', 'err'); return; }
       if (start >= end) { toast('End time must be after start', 'err'); return; }
 
@@ -975,32 +525,38 @@
       document.getElementById('fEnd').value = '';
       document.getElementById('fSubject').value = '';
       document.getElementById('fType').value = 'lecture';
-      toast(editingId !== null ? 'Updated' : 'Period added', 'ok');
+      // CHANGED: reset char counter & warn on clear
+      onSubjectInput(document.getElementById('fSubject'));
+      toast('Period added', 'ok');
     }
 
     function startEdit(id) {
       const entry = schedule.find(s => s.id === id);
       if (!entry) return;
       editingId = id;
-      document.getElementById('fStart').value = entry.start;
-      document.getElementById('fEnd').value = entry.end;
+      document.getElementById('fStart').value   = entry.start;
+      document.getElementById('fEnd').value     = entry.end;
       document.getElementById('fSubject').value = entry.subject;
-      document.getElementById('fType').value = entry.type;
-      document.getElementById('formModeLabel').textContent = 'Edit Period';
-      document.getElementById('formSubmitBtn').textContent = '✓ Save Changes';
+      document.getElementById('fType').value    = entry.type;
+      document.getElementById('formModeLabel').textContent    = 'Edit Period';
+      document.getElementById('formSubmitBtn').textContent    = '✓ Save Changes';
       document.getElementById('formCancelBtn').style.display = '';
+      // CHANGED: update counter when loading into form
+      onSubjectInput(document.getElementById('fSubject'));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function cancelEdit() {
       editingId = null;
-      document.getElementById('fStart').value = '';
-      document.getElementById('fEnd').value = '';
+      document.getElementById('fStart').value   = '';
+      document.getElementById('fEnd').value     = '';
       document.getElementById('fSubject').value = '';
-      document.getElementById('fType').value = 'lecture';
-      document.getElementById('formModeLabel').textContent = 'Add New Period';
-      document.getElementById('formSubmitBtn').textContent = '+ Add Period';
+      document.getElementById('fType').value    = 'lecture';
+      document.getElementById('formModeLabel').textContent    = 'Add New Period';
+      document.getElementById('formSubmitBtn').textContent    = '+ Add Period';
       document.getElementById('formCancelBtn').style.display = 'none';
+      // CHANGED: reset counter on cancel
+      onSubjectInput(document.getElementById('fSubject'));
     }
 
     function deleteEntry(id) {
@@ -1017,103 +573,115 @@
       const [sh, sm] = start.split(':').map(Number);
       const [eh, em] = end.split(':').map(Number);
       const mins = (eh * 60 + em) - (sh * 60 + sm);
-      return mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
+      return mins >= 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : `${mins}m`;
     }
     function tagHTML(type) {
-      const map = { lecture: 'tag-lecture', lab: 'tag-lab', break: 'tag-break' };
-      return `<span class="tag ${map[type] || 'tag-lecture'}">${type.toUpperCase()}</span>`;
+      const map = { lecture:'tag-lecture', lab:'tag-lab', break:'tag-break' };
+      return `<span class="tag ${map[type]||'tag-lecture'}">${type.toUpperCase()}</span>`;
     }
     function timeLabel(t) {
       const [h, m] = t.split(':').map(Number);
       const ampm = h >= 12 ? 'PM' : 'AM';
       const hh = h % 12 || 12;
-      return `${hh}:${m.toString().padStart(2, '0')} ${ampm}`;
+      return `${hh}:${m.toString().padStart(2,'0')} ${ampm}`;
+    }
+    // CHANGED: firmware formatTime() equivalent — "H:MMxM" like "9:00AM"
+    function fmtTime(t) {
+      const [h, m] = t.split(':').map(Number);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const hh = h % 12 || 12;
+      return `${hh}:${m.toString().padStart(2,'0')}${ampm}`;
     }
     function currentPeriod() {
       const now = new Date();
-      const cur = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const cur = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
       return schedule.find(s => s.start <= cur && cur < s.end) || null;
     }
     function nextPeriod() {
       const now = new Date();
-      const cur = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const cur = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
       return schedule.find(s => s.start > cur) || null;
     }
 
     function render() {
       const tbody = document.getElementById('schedBody');
-      document.getElementById('countBadge').textContent = `${schedule.length} period${schedule.length !== 1 ? 's' : ''}`;
+      document.getElementById('countBadge').textContent = `${schedule.length} period${schedule.length!==1?'s':''}`;
       if (!schedule.length) {
         tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No periods added yet. Add your first class above.</td></tr>';
         return;
       }
       const cp = currentPeriod();
-      tbody.innerHTML = schedule.map(s => `
-    <tr ${cp && cp.id === s.id ? 'class="current-period"' : ''}>
-      <td class="td-time">${timeLabel(s.start)}</td>
-      <td class="td-time">${timeLabel(s.end)}</td>
-      <td class="td-duration">${durationStr(s.start, s.end)}</td>
-      <td class="td-subject">${s.subject}</td>
-      <td>${tagHTML(s.type)}</td>
-      <td>
-        <button class="action-btn" onclick="startEdit(${s.id})" title="Edit">✏️</button>
-        <button class="action-btn del" onclick="deleteEntry(${s.id})" title="Delete">🗑️</button>
-      </td>
-    </tr>
-  `).join('');
+      tbody.innerHTML = schedule.map(s => {
+        // CHANGED: show scroll badge if subject > 16 chars
+        const scrollBadge = s.subject.length > 16
+          ? `<span class="truncated-badge" title="Scrolls on LCD">SCROLL</span>`
+          : '';
+        return `
+        <tr ${cp && cp.id === s.id ? 'class="current-period"' : ''}>
+          <td class="td-time">${timeLabel(s.start)}</td>
+          <td class="td-time">${timeLabel(s.end)}</td>
+          <td class="td-duration">${durationStr(s.start, s.end)}</td>
+          <td class="td-subject">${s.subject}${scrollBadge}</td>
+          <td>${tagHTML(s.type)}</td>
+          <td>
+            <button class="action-btn" onclick="startEdit(${s.id})" title="Edit">✏️</button>
+            <button class="action-btn del" onclick="deleteEntry(${s.id})" title="Delete">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
     }
 
-  
-    function pad16(s) { return (s + '                ').slice(0, 16); }
-
+    // ─────────────────────────────────────────────────────
+    // CHANGED: LCD live preview — mirrors firmware logic exactly
+    // ─────────────────────────────────────────────────────
     function updateLiveStatus() {
       const cp = currentPeriod();
       const np = nextPeriod();
 
       if (cp) {
-        // Row 1: time range
-        const row1 = `${timeLabel(cp.start)}-${timeLabel(cp.end)}`;
-        // Row 2: subject (scroll handled on NodeMCU side)
+        // Row 1: "H:MMxM-H:MMxM" — same as firmware formatTime(start)+"-"+formatTime(end)
+        const row1 = `${fmtTime(cp.start)}-${fmtTime(cp.end)}`;
+        // Row 2: subject name — scrolls if >16
         const row2 = cp.subject;
-        document.getElementById('lcdRow1').textContent = pad16(row1);
-        document.getElementById('lcdRow2').textContent = pad16(row2);
+        lcdSetRow('row1', row1);
+        lcdSetRow('row2', row2);
+
         document.getElementById('liveCurrentSubject').textContent = cp.subject;
         document.getElementById('liveEndsAt').textContent = timeLabel(cp.end);
         document.getElementById('liveLED').textContent = 'ON';
         document.getElementById('liveLED').className = 'live-val green';
         document.getElementById('dotLED').className = 'hw-dot on-green';
-        // check if period JUST ended for buzzer flash
-        document.getElementById('dotBuzzer').className = 'hw-dot'; // reset each tick
+        document.getElementById('dotBuzzer').className = 'hw-dot';
       } else {
-        // Between classes — show next
         if (np) {
-          document.getElementById('lcdRow1').textContent = pad16('Next: ' + np.start);
-          document.getElementById('lcdRow2').textContent = pad16(np.subject);
+          // CHANGED: matches firmware — "Next Class:" on row1, "SUBJECT @ H:MMxM" on row2
+          lcdSetRow('row1', 'Next Class:');
+          lcdSetRow('row2', `${np.subject} @ ${fmtTime(np.start)}`);
         } else {
-          document.getElementById('lcdRow1').textContent = pad16('No more classes');
-          document.getElementById('lcdRow2').textContent = pad16('Have a good day!');
+          lcdSetRow('row1', 'All done today!');
+          lcdSetRow('row2', 'Have a good day!');
         }
         document.getElementById('liveCurrentSubject').textContent = 'No active class';
         document.getElementById('liveEndsAt').textContent = '—';
         document.getElementById('liveLED').textContent = 'OFF';
         document.getElementById('liveLED').className = 'live-val';
         document.getElementById('dotLED').className = 'hw-dot';
+        document.getElementById('dotBuzzer').className = 'hw-dot';
       }
 
-      document.getElementById('liveNext').textContent = np ? `${np.subject} @ ${timeLabel(np.start)}` : '—';
-      render(); // re-highlight current row
+      document.getElementById('liveNext').textContent = np
+        ? `${np.subject} @ ${timeLabel(np.start)}` : '—';
+
+      render();
     }
 
-    // Buzzer flash: simulate a 3-second flash when period ends
+    // Buzzer flash simulation
     let lastCheckedEnded = null;
     function checkPeriodEnd() {
       const now = new Date();
-      const cur = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
       const justEnded = schedule.find(s => {
         const [eh, em] = s.end.split(':').map(Number);
-        const endMin = eh * 60 + em;
-        const nowMin = now.getHours() * 60 + now.getMinutes();
-        return nowMin === endMin && now.getSeconds() < 10;
+        return (now.getHours() * 60 + now.getMinutes()) === (eh * 60 + em) && now.getSeconds() < 10;
       });
       if (justEnded && justEnded.id !== lastCheckedEnded) {
         lastCheckedEnded = justEnded.id;
@@ -1137,11 +705,12 @@
       clearTimeout(_tt); _tt = setTimeout(() => { el.className = ''; }, 3000);
     }
 
-
+    // ─────────────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────────────
     render();
     updateLiveStatus();
-    setInterval(() => { updateLiveStatus(); checkPeriodEnd(); }, 10000);
+    setInterval(() => { updateLiveStatus(); checkPeriodEnd(); }, 5000);
   </script>
 </body>
-
 </html>
